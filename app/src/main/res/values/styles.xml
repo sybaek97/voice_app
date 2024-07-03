@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="txt_big">
+        <item name="fontFamily">@font/nanum_square_round_eb</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textColor">@color/text_black</item>
+    </style>
+
+
+    <style name="txt_middle">
+        <item name="fontFamily">@font/nanum_square_round_b</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_black</item>
+    </style>
+    <style name="txt_small">
+        <item name="fontFamily">@font/nanum_square_round_b</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_black</item>
+    </style>
+    <style name="button_text" parent="txt_middle">
+        <item name="android:background">@drawable/button_border</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_margin">20dp</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textStyle">bold</item>
+
+        <item name="android:textColor">@color/text_brown</item>
+    </style>
+
+</resources>

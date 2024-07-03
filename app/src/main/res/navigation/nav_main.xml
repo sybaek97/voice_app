@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_main"
+    app:startDestination="@id/homeFragment">
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.baek.voice.view.HomeFragment"
+        android:label="homeFragment"
+        tools:layout="@layout/fragment_home">
+
+
+        <action
+            android:id="@+id/action_homeFragment_to_bookListFragment"
+            app:destination="@id/bookListFragment"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/fragment_fade_exit"
+            app:launchSingleTop="true"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit"
+
+            app:popUpTo="@id/bookListFragment"
+            app:popUpToInclusive="true"
+            />
+        <action
+            android:id="@+id/action_homeFragment_to_sttFragment"
+            app:destination="@id/sttFragment"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/fragment_fade_exit"
+            app:launchSingleTop="true"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit"
+
+            app:popUpTo="@id/sttFragment"
+            app:popUpToInclusive="true"
+            />
+        <action
+            android:id="@+id/action_homeFragment_to_libraryEventFragment"
+            app:destination="@id/libraryEventFragment"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/fragment_fade_exit"
+            app:launchSingleTop="true"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit"
+
+            app:popUpTo="@id/libraryEventFragment"
+            app:popUpToInclusive="true"
+            />
+        <action
+            android:id="@+id/action_homeFragment_to_bestSellerFragment"
+            app:destination="@id/bestSellerFragment"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/fragment_fade_exit"
+            app:launchSingleTop="true"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit"
+            app:popUpTo="@id/bestSellerFragment"
+            app:popUpToInclusive="true"
+            />
+    </fragment>
+
+    <fragment
+        android:id="@+id/bestSellerFragment"
+        android:name="com.baek.voice.view.BestSellerFragment"
+        android:label="BestSellerFragment"
+        tools:layout="@layout/fragment_best_seller">
+
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/bookListFragment"
+        android:name="com.baek.voice.view.BookListFragment"
+        android:label="BookListFragment"
+        tools:layout="@layout/fragment_book_list">
+
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/libraryEventFragment"
+        android:name="com.baek.voice.view.LibraryEventFragment"
+        android:label="MyGroupFragment"
+        tools:layout="@layout/fragment_library_event">
+
+
+    </fragment>
+    <fragment
+        android:id="@+id/sttFragment"
+        android:name="com.baek.voice.view.SttFragment"
+        android:label="SttFragment"
+        tools:layout="@layout/fragment_stt">
+
+
+    </fragment>
+</navigation>

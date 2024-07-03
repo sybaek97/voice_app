@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:padding="30dp"
+        tools:context=".view.MainActivity">
+
+
+        <TextView
+            android:id="@+id/title_text"
+            style="@style/txt_big"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="11dp"
+            android:text="안녕하세요!\n무엇을 도와드릴까요?"
+            android:textAlignment="center"
+            app:layout_constraintBottom_toTopOf="@id/btn_box"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/btn_box"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_text">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/book_list_btn"
+                style="@style/button_text"
+                android:text="도서목록"
+                app:layout_constraintBottom_toTopOf="@id/library_event_btn"
+                app:layout_constraintEnd_toStartOf="@id/best_seller_btn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/best_seller_btn"
+                style="@style/button_text"
+                android:text="베스트셀러"
+                app:layout_constraintBottom_toBottomOf="@id/book_list_btn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/book_list_btn"
+                app:layout_constraintTop_toTopOf="@id/book_list_btn" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/library_event_btn"
+                style="@style/button_text"
+                android:text="도서관 행사"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/stt_btn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/book_list_btn" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/stt_btn"
+                style="@style/button_text"
+                android:text="음성인식"
+                app:layout_constraintBottom_toBottomOf="@id/library_event_btn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/library_event_btn"
+                app:layout_constraintTop_toTopOf="@id/library_event_btn" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</layout>
