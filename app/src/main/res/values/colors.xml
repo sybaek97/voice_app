@@ -3,8 +3,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="main">#E7E7DF</color>
-    <color name="background">#F4F4EC</color>
+    <color name="background">#3F51B4</color>
     <color name="text_white">#FFFFFFFF</color>
+    <color name="text_snuff">#D9D9ED</color>
     <color name="text_brown">#CB483E</color>
     <color name="text_black">#333333</color>
     <color name="sub_gray">#9F9F9F</color>

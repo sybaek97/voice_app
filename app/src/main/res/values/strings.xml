@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">voice</string>
     <string name="txt_pressed_back">뒤로 버튼을 한번 더 누르시면 종료됩니다.</string>
+    <string name="top_books_loan_txt">추천 도서 대출</string>
+    <string name="event_info_txt">행사 안내</string>
+    <string name="audio_replay_txt">다시 듣기</string>
 
 </resources>

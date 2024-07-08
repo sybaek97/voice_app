@@ -36,21 +36,14 @@ class HomeFragment : BaseFragment(){
         binding.titleText.startAnimation(fadeInUpAnimation)
         binding.lifecycleOwner=this
 
-        binding.bookListBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_bookListFragment)
+        binding.eventInfoBtn.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_eventInfoFragment)
         }
-        binding.libraryEventBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_libraryEventFragment)
+        binding.topBooksLoanBtn.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_topBooksLoanFramgnet)
 
         }
-        binding.bestSellerBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_bestSellerFragment)
 
-        }
-        binding.sttBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_sttFragment)
-
-        }
     }
 
 }

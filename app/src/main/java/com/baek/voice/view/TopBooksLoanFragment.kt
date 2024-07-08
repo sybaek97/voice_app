@@ -7,22 +7,22 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import com.baek.voice.R
 import com.baek.voice.application.BaseFragment
-import com.baek.voice.databinding.FragmentLibraryEventBinding
+import com.baek.voice.databinding.FragmentTopBooksLoanBinding
 
-class LibraryEventFragment : BaseFragment(){
+class TopBooksLoanFragment : BaseFragment(){
     override var isBackAvailable: Boolean = true
-    private lateinit var binding : FragmentLibraryEventBinding
     private val TAG = javaClass.simpleName
+    private lateinit var binding: FragmentTopBooksLoanBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        binding=DataBindingUtil.inflate(inflater, R.layout.fragment_library_event,container,false)
+        binding= DataBindingUtil.inflate(inflater, R.layout.fragment_top_books_loan,container,
+            false
+        )
         return binding.root
 
     }
-
 }

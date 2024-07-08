@@ -17,7 +17,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:lineSpacingExtra="11dp"
-            android:text="안녕하세요!\n무엇을 도와드릴까요?"
+            android:text="한국공학대학교\n도서관 도우미"
+            android:textColor="@color/text_snuff"
             android:textAlignment="center"
             app:layout_constraintBottom_toTopOf="@id/btn_box"
             app:layout_constraintEnd_toEndOf="parent"
@@ -34,40 +35,34 @@
             app:layout_constraintTop_toBottomOf="@id/title_text">
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/book_list_btn"
+                android:id="@+id/top_books_loan_btn"
                 style="@style/button_text"
-                android:text="도서목록"
-                app:layout_constraintBottom_toTopOf="@id/library_event_btn"
-                app:layout_constraintEnd_toStartOf="@id/best_seller_btn"
+                android:text="@string/top_books_loan_txt"
+                app:layout_constraintBottom_toTopOf="@id/event_info_btn"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/best_seller_btn"
-                style="@style/button_text"
-                android:text="베스트셀러"
-                app:layout_constraintBottom_toBottomOf="@id/book_list_btn"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/book_list_btn"
-                app:layout_constraintTop_toTopOf="@id/book_list_btn" />
+
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/library_event_btn"
+                android:id="@+id/event_info_btn"
                 style="@style/button_text"
-                android:text="도서관 행사"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/stt_btn"
+                android:text="@string/event_info_txt"
+                app:layout_constraintBottom_toTopOf="@id/audio_replay_btn"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/book_list_btn" />
+                app:layout_constraintTop_toBottomOf="@id/top_books_loan_btn" />
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/stt_btn"
+                android:id="@+id/audio_replay_btn"
                 style="@style/button_text"
-                android:text="음성인식"
-                app:layout_constraintBottom_toBottomOf="@id/library_event_btn"
+                android:text="@string/audio_replay_txt"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/library_event_btn"
-                app:layout_constraintTop_toTopOf="@id/library_event_btn" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/event_info_btn" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
