@@ -69,5 +69,4 @@ dependencies {
     implementation(libs.androidx.databinding.runtime)
     implementation(libs.lottie)
 
-
 }
