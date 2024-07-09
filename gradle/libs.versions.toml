@@ -28,6 +28,7 @@ navigationUiKtx = "2.7.7"
 recyclerview = "1.3.2"
 retrofit = "2.9.0"
 securityCrypto = "1.1.0-alpha06"
+slf4jNop = "1.7.25"
 workRuntime = "2.9.0"
 firebaseAuthKtx = "23.0.0"
 firebaseFirestoreKtx = "25.0.0"
@@ -70,6 +71,7 @@ firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx",
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4jNop" }
 
 
 [plugins]

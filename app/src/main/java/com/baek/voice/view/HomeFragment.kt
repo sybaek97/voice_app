@@ -1,19 +1,15 @@
 package com.baek.voice.view
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
-import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityManager
 import android.view.animation.AnimationUtils
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
@@ -21,7 +17,10 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.baek.voice.R
 import com.baek.voice.application.BaseFragment
+import com.baek.voice.common.PermissionRequestHandler
+import com.baek.voice.common.SharedPreferenceHelper
 import com.baek.voice.databinding.FragmentHomeBinding
+import com.baek.voice.viewModel.PermissionViewModel
 import com.baek.voice.viewModel.SttViewModel
 import com.baek.voice.viewModel.TtsViewModel
 
@@ -29,9 +28,11 @@ class HomeFragment : BaseFragment() {
     override var isBackAvailable: Boolean = false
     private lateinit var binding: FragmentHomeBinding
     private val TAG = javaClass.simpleName
-    private val viewModel: TtsViewModel by viewModels()
+    private val ttsViewModel: TtsViewModel by viewModels()
     private val sttViewModel: SttViewModel by viewModels()
-    private var REQUEST_RECORD_AUDIO_PERMISSION = 0
+    private val permissionViewModel: PermissionViewModel by viewModels()
+    private var talkBack: Boolean = false
+    private var isButtonOn: Boolean = false
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -42,6 +43,7 @@ class HomeFragment : BaseFragment() {
             R.layout.fragment_home, container,
             false
         )
+        talkBack = isTalkBackEnabled(requireContext())
 
         return binding.root
     }
@@ -51,65 +53,88 @@ class HomeFragment : BaseFragment() {
         val fadeInUpAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.fade_in_up)
         binding.titleText.startAnimation(fadeInUpAnimation)
         binding.lifecycleOwner = this
-        viewModel.isTtsInitialized.observe(viewLifecycleOwner) { isInitialized ->
-            if (isInitialized == true) {
-                viewModel.speakOut(getString(R.string.intro_audio))
+
+
+        PermissionRequestHandler.initializePermissionLauncher(this)
+        PermissionRequestHandler.requestAudioPermission(this)
+        permissionViewModel.permissionStatus.observe(viewLifecycleOwner) { status ->
+            when (status) {
+                PermissionViewModel.PermissionStatus.GRANTED -> {
+                    ttsViewModel.isTtsInitialized.observe(viewLifecycleOwner) { isInitialized ->
+                        if (isInitialized == true) {
+                            ttsViewModel.speakOut(getString(R.string.intro_audio))
+                            /** AUX 선 유무 확인 후*/
+                            ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
+
+                        }
+                    }
+                }
+
+                PermissionViewModel.PermissionStatus.DENIED_ONCE, PermissionViewModel.PermissionStatus.DENIED_TWICE -> {
+                    if (talkBack) {
+                        PermissionRequestHandler.requestAudioPermission(this)
+                    } else {
+                        ttsViewModel.speakOut(getString(R.string.permission_audio))
+                        PermissionRequestHandler.requestAudioPermission(this)
+                    }
+                }
+
             }
         }
+
+        if(SharedPreferenceHelper(requireContext(),"aux",false).prefGetter() as Boolean){
+            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
+            binding.auxBtn.text="OFF"
+        }else{
+            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.sub))
+            binding.auxBtn.text="ON"
+        }
+
         sttViewModel.recognizedText.observe(viewLifecycleOwner, Observer { text ->
             binding.textView.text = text
         })
-        sttViewModel.permissionRequestNeeded.observe(viewLifecycleOwner, Observer { needed ->
-            if (needed) {
-                requestPermissions(
-                    arrayOf(Manifest.permission.RECORD_AUDIO),
-                    REQUEST_RECORD_AUDIO_PERMISSION
-                )
-            }
-        })
-        sttViewModel.shouldShowPermissionRationale.observe(viewLifecycleOwner, Observer { shouldShow ->
-            if (shouldShow) {
-                showPermissionRationale()
-            }
-        })
+
+
+
+        binding.auxBtn.setOnClickListener{
+            isButtonOn = !isButtonOn
+            updateButtonState()
+        }
         binding.eventInfoBtn.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_eventInfoFragment)
         }
         binding.topBooksLoanBtn.setOnClickListener {
-//            findNavController().navigate(R.id.action_homeFragment_to_topBooksLoanFramgnet)
-            sttViewModel.startListening()
-
+            ttsViewModel.stop()
+            findNavController().navigate(R.id.action_homeFragment_to_topBooksLoanFramgnet)
         }
-        sttViewModel.checkPermission(requireContext())
+
+        binding.audioReplayBtn.setOnClickListener{
+            ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
+        }
+
+
 
     }
-    private fun showPermissionRationale() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.RECORD_AUDIO)) {
-            // 사용자에게 권한이 필요한 이유를 설명하는 안내
-            sttViewModel.speakOut(requireContext(), this.getString(R.string.permission_audio))
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_RECORD_AUDIO_PERMISSION)
+
+    private fun isTalkBackEnabled(context: Context): Boolean {
+        val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        val enabledServices = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        )
+        return enabledServices.contains("TalkBack") || am.isTouchExplorationEnabled
+    }
+
+
+    private fun updateButtonState() {
+        if (isButtonOn) {
+            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.sub))
+            binding.auxBtn.text="ON"
+            SharedPreferenceHelper(requireContext(),"aux",true).prefSetter()
         } else {
-            // 다시 권한 요청
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_RECORD_AUDIO_PERMISSION)
+            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
+            binding.auxBtn.text="OFF"
+            SharedPreferenceHelper(requireContext(),"aux",false).prefSetter()
         }
     }
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
-            val permissionGranted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-            sttViewModel.handlePermissionResult(permissionGranted)
-        }
-    }
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
-//            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-//                sttViewModel.startListening()
-//            }
-//        }
-//    }
 }

@@ -68,5 +68,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.databinding.runtime)
     implementation(libs.lottie)
+    implementation libs.slf4j.nop
 
 }

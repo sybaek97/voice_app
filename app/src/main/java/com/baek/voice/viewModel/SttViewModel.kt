@@ -13,7 +13,9 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.view.accessibility.AccessibilityManager
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -27,10 +29,6 @@ class SttViewModel(application: Application) : AndroidViewModel(application),
     private val _recognizedText = MutableLiveData<String>()
     val recognizedText: LiveData<String> get() = _recognizedText
 
-    private val _permissionRequestNeeded = MutableLiveData<Boolean>()
-    val permissionRequestNeeded: LiveData<Boolean> get() = _permissionRequestNeeded
-    private val _shouldShowPermissionRationale = MutableLiveData<Boolean>()
-    val shouldShowPermissionRationale: LiveData<Boolean> get() = _shouldShowPermissionRationale
     private val speechRecognizer: SpeechRecognizer =
         SpeechRecognizer.createSpeechRecognizer(application)
     private lateinit var tts: TextToSpeech
@@ -75,40 +73,11 @@ class SttViewModel(application: Application) : AndroidViewModel(application),
         }
         speechRecognizer.startListening(intent)
     }
-    fun handlePermissionResult(granted: Boolean) {
-        if (!granted) {
-            _shouldShowPermissionRationale.value = true
-        }
-    }
-    fun checkPermission(context: Context) {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            if (isTalkBackEnabled(context)) {
-                speakOut(context, context.getString(R.string.permission_audio))
-                Handler(Looper.getMainLooper()).postDelayed({
-                    _permissionRequestNeeded.value = true
-                }, 3000)
-            } else {
-                _permissionRequestNeeded.value = true
-            }
-        }
-    }
 
-    private fun isTalkBackEnabled(context: Context): Boolean {
-        val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-        val enabledServices = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )
-        return enabledServices.contains("TalkBack") || am.isTouchExplorationEnabled
-    }
 
-    fun speakOut(context: Context, message: String) {
-        tts.speak(message, TextToSpeech.QUEUE_FLUSH, null, "")
-    }
+
+
+
 
     override fun onCleared() {
         super.onCleared()
@@ -116,4 +85,8 @@ class SttViewModel(application: Application) : AndroidViewModel(application),
         tts.stop()
         tts.shutdown()
     }
+
+
+
+
 }

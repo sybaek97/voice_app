@@ -3,37 +3,68 @@ package com.baek.voice.viewModel
 import android.app.Application
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.OnInitListener
+import android.speech.tts.UtteranceProgressListener
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import java.util.LinkedList
 import java.util.Locale
+import java.util.Queue
 
 class TtsViewModel(application: Application):AndroidViewModel(application),OnInitListener {
     private val _isTtsInitialized = MutableLiveData<Boolean>()
     val isTtsInitialized: LiveData<Boolean> get() = _isTtsInitialized
     private val tts: TextToSpeech = TextToSpeech(application, this)
+    private var currentIndex = 0
+    private var textsQueue: Queue<String> = LinkedList()
     init {
-       _isTtsInitialized.value=false
+        tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String?) {}
+
+            override fun onDone(utteranceId: String?) {
+                if (textsQueue.isNotEmpty()) {
+                    val nextText = textsQueue.poll()
+                    tts.speak(nextText, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+                }
+            }
+
+            override fun onError(utteranceId: String?) {}
+        })
     }
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             val result = tts.setLanguage(Locale.KOREAN)
-            _isTtsInitialized.value = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                // 언어가 지원되지 않음
+            } else {
+                _isTtsInitialized.value = true
+            }
         } else {
             _isTtsInitialized.value = false
         }
     }
 
     fun speakOut(text: String) {
-        if (_isTtsInitialized.value == true) {
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "")
+        if (isTtsInitialized.value == true) {
+            if (tts.isSpeaking) {
+                textsQueue.add(text)
+            } else {
+                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "UniqueID")
+            }
         }
     }
-
+    fun oneSpeakOut(text: String) {
+        if (isTtsInitialized.value == true) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "UniqueID")
+        }
+    }
     override fun onCleared() {
         super.onCleared()
         tts.stop()
         tts.shutdown()
+    }
+    fun stop(){
+        tts.stop()
     }
 
 }
