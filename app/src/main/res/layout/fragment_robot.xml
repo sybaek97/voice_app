@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:background="@color/background"
         android:padding="30dp"
-        tools:context=".view.MainActivity">
+        tools:context=".view.RobotFragment">
 
 
         <TextView
@@ -19,25 +19,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="150dp"
-            android:text="@string/top_books_loan_txt"
+            android:text="crepass"
             android:textColor="@color/text_snuff"
             android:lineSpacingExtra="11dp"
             android:textAlignment="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:padding="10dp"
-            android:id="@+id/recycler_book_list"
-            app:layout_constraintTop_toBottomOf="@id/title_text"
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/aux_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/aux_image"
+            android:text="ON"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-
-            />
-
+            app:layout_constraintTop_toBottomOf="@id/title_text" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

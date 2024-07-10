@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -69,5 +70,6 @@ dependencies {
     implementation(libs.androidx.databinding.runtime)
     implementation(libs.lottie)
     implementation libs.slf4j.nop
-
+    implementation libs.androidx.recyclerview.v121
+    implementation libs.androidx.navigation.dynamic.features.fragment
 }

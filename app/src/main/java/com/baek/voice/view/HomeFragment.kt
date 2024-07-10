@@ -33,6 +33,7 @@ class HomeFragment : BaseFragment() {
     private val permissionViewModel: PermissionViewModel by viewModels()
     private var talkBack: Boolean = false
     private var isButtonOn: Boolean = false
+    private val AUX:String = "aux"
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -48,6 +49,7 @@ class HomeFragment : BaseFragment() {
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val fadeInUpAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.fade_in_up)
@@ -62,10 +64,7 @@ class HomeFragment : BaseFragment() {
                 PermissionViewModel.PermissionStatus.GRANTED -> {
                     ttsViewModel.isTtsInitialized.observe(viewLifecycleOwner) { isInitialized ->
                         if (isInitialized == true) {
-                            ttsViewModel.speakOut(getString(R.string.intro_audio))
-                            /** AUX 선 유무 확인 후*/
-                            ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
-
+                            ttsViewModel.oneSpeakOut(getString(R.string.intro_audio))
                         }
                     }
                 }
@@ -74,7 +73,7 @@ class HomeFragment : BaseFragment() {
                     if (talkBack) {
                         PermissionRequestHandler.requestAudioPermission(this)
                     } else {
-                        ttsViewModel.speakOut(getString(R.string.permission_audio))
+                        ttsViewModel.oneSpeakOut(getString(R.string.permission_audio))
                         PermissionRequestHandler.requestAudioPermission(this)
                     }
                 }
@@ -82,25 +81,20 @@ class HomeFragment : BaseFragment() {
             }
         }
 
-        if(SharedPreferenceHelper(requireContext(),"aux",false).prefGetter() as Boolean){
-            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
-            binding.auxBtn.text="OFF"
-        }else{
-            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.sub))
-            binding.auxBtn.text="ON"
-        }
+        updateButtonState()
 
-        sttViewModel.recognizedText.observe(viewLifecycleOwner, Observer { text ->
+        sttViewModel.recognizedText.observe(viewLifecycleOwner) { text ->
             binding.textView.text = text
-        })
+        }
 
 
 
         binding.auxBtn.setOnClickListener{
-            isButtonOn = !isButtonOn
-            updateButtonState()
+            ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
+            updateButtonToggle()
         }
         binding.eventInfoBtn.setOnClickListener {
+            sttViewModel.startListening()
             findNavController().navigate(R.id.action_homeFragment_to_eventInfoFragment)
         }
         binding.topBooksLoanBtn.setOnClickListener {
@@ -126,15 +120,25 @@ class HomeFragment : BaseFragment() {
     }
 
 
-    private fun updateButtonState() {
-        if (isButtonOn) {
+    private fun updateButtonToggle() {
+        if(SharedPreferenceHelper(requireContext(),AUX,false).prefGetter() as Boolean){
             binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.sub))
-            binding.auxBtn.text="ON"
-            SharedPreferenceHelper(requireContext(),"aux",true).prefSetter()
-        } else {
-            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
             binding.auxBtn.text="OFF"
-            SharedPreferenceHelper(requireContext(),"aux",false).prefSetter()
+            SharedPreferenceHelper(requireContext(),AUX,false).prefSetter()
+        }else{
+            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
+            binding.auxBtn.text="ON"
+            SharedPreferenceHelper(requireContext(),AUX,true).prefSetter()
+
+        }
+    }
+    private fun updateButtonState() {
+        if(SharedPreferenceHelper(requireContext(),AUX,false).prefGetter() as Boolean){
+            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
+            binding.auxBtn.text="ON"
+        }else{
+            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.sub))
+            binding.auxBtn.text="OFF"
         }
     }
 }

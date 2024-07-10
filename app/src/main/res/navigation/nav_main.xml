@@ -41,11 +41,38 @@
         android:name="com.baek.voice.view.TopBooksLoanFragment"
         android:label="topBooksLoanFramgnet"
         tools:layout="@layout/fragment_top_books_loan">
+
+
+        <action
+            android:id="@+id/action_topBooksLoanFramgnet_to_robotFragment"
+            app:destination="@id/robotFragment"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/fragment_fade_exit"
+            app:launchSingleTop="true"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit"
+
+            app:popUpTo="@id/robotFragment"
+            app:popUpToInclusive="true">
+            <argument
+                android:name="selectedItem"
+                app:argType="string" />
+        </action>
     </fragment>
     <fragment
         android:id="@+id/eventInfoFragment"
         android:name="com.baek.voice.view.EventInfoFragment"
         android:label="eventInfoFragment"
-        tools:layout="@layout/fragment_event_info">
+        tools:layout="@layout/fragment_event_info"/>
+    <fragment
+        android:id="@+id/robotFragment"
+        android:name="com.baek.voice.view.RobotFragment"
+        android:label="robotFragment"
+        tools:layout="@layout/fragment_robot">
+
+        <argument
+            android:name="selectedItem"
+            android:defaultValue=""
+            app:argType="string" />
     </fragment>
 </navigation>

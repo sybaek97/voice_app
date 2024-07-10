@@ -23,18 +23,15 @@ import androidx.lifecycle.MutableLiveData
 import com.baek.voice.R
 import java.util.*
 
-class SttViewModel(application: Application) : AndroidViewModel(application),
-    TextToSpeech.OnInitListener {
+class SttViewModel(application: Application) : AndroidViewModel(application){
 
     private val _recognizedText = MutableLiveData<String>()
     val recognizedText: LiveData<String> get() = _recognizedText
 
-    private val speechRecognizer: SpeechRecognizer =
+    private var speechRecognizer: SpeechRecognizer =
         SpeechRecognizer.createSpeechRecognizer(application)
-    private lateinit var tts: TextToSpeech
 
     init {
-        tts = TextToSpeech(application, this)
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {}
             override fun onBeginningOfSpeech() {}
@@ -57,11 +54,7 @@ class SttViewModel(application: Application) : AndroidViewModel(application),
         })
     }
 
-    override fun onInit(status: Int) {
-        if (status == TextToSpeech.SUCCESS) {
-            tts.language = Locale.KOREAN
-        }
-    }
+
 
     fun startListening() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -82,8 +75,6 @@ class SttViewModel(application: Application) : AndroidViewModel(application),
     override fun onCleared() {
         super.onCleared()
         speechRecognizer.destroy()
-        tts.stop()
-        tts.shutdown()
     }
 
 
