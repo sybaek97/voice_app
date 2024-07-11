@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -21,7 +22,7 @@ import com.baek.voice.viewModel.TtsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class TopBooksLoanFragment : BaseFragment(){
+class TopBooksLoanFragment : BaseFragment() {
     override var isBackAvailable: Boolean = true
     private val TAG = javaClass.simpleName
     private lateinit var binding: FragmentTopBooksLoanBinding
@@ -30,12 +31,19 @@ class TopBooksLoanFragment : BaseFragment(){
     private lateinit var layoutManager: RecyclerView.LayoutManager
     private val bookListViewModel: BookListViewModel by viewModels()
     private lateinit var adapter: BookAdapter
+    private var backKeyPressedTime: Long = 0
+
+    private lateinit var bookList: Array<String>
+    private lateinit var bookListText: String
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding= DataBindingUtil.inflate(inflater, R.layout.fragment_top_books_loan,container,
+        binding = DataBindingUtil.inflate(
+            inflater, R.layout.fragment_top_books_loan, container,
             false
         )
         return binding.root
@@ -44,59 +52,76 @@ class TopBooksLoanFragment : BaseFragment(){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        bookList = resources.getStringArray(R.array.top_book_list)
+        bookListText = ""
+
+
         ttsViewModel.isTtsInitialized.observe(viewLifecycleOwner) { isInitialized ->
             if (isInitialized == true) {
                 ttsViewModel.oneSpeakOut(getString(R.string.top_books_main_audio))
             }
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            delay(3000)
-            val bookList=resources.getStringArray(R.array.top_book_list)
-            var bookListText=""
-            for (i in bookList.indices){
 
-                if(i==bookList.size-1){
-                    bookListText+="${i+1}번은 ${bookList[i]} 입니다.${getString(R.string.top_books_main_menu_audio)}" +
-                            "다시듣기를 원하시면 다시듣기를 말씀해주세요."
-                    break
-                }
-                bookListText+="${i+1}번은 ${bookList[i]}. "
+        val recyclerView = binding.recyclerBookList
+        layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.layoutManager = layoutManager
 
-            }
-            Log.d(TAG, "onViewCreated: $bookListText")
-            ttsViewModel.oneSpeakOut(bookListText)
-            ttsViewModel.doneId.observe(viewLifecycleOwner){
-                if(it==getString(R.string.top_books_main_audio)||it==bookListText){
-                    sttViewModel.startListening()
-                }
-            }
-
-        }
-
-
-
-        val recyclerView=binding.recyclerBookList
-        layoutManager=LinearLayoutManager(requireContext())
-        recyclerView.layoutManager=layoutManager
-
-        bookListViewModel.data.observe(viewLifecycleOwner){ data ->
-            adapter = BookAdapter(data,object : BookAdapter.OnItemClickListener{
+        bookListViewModel.data.observe(viewLifecycleOwner) { data ->
+            adapter = BookAdapter(data, object : BookAdapter.OnItemClickListener {
                 override fun onItemClick(item: String) {
                     ttsViewModel.stop()
-                    val action=TopBooksLoanFragmentDirections.actionTopBooksLoanFramgnetToRobotFragment(item)
+                    val action =
+                        TopBooksLoanFragmentDirections.actionTopBooksLoanFramgnetToRobotFragment(
+                            item
+                        )
                     findNavController().navigate(action)
                 }
             })
             recyclerView.adapter = adapter
         }
 
+        bookListTTS()
 
+        sttViewModel.recognizedText.observe(viewLifecycleOwner) { sttId ->
+            if(sttId=="다시 듣기"){
+                bookListTTS()
+
+            }else{
+                for (i in bookList.indices) {
+                    if (sttId == "${i + 1}번"||sttId== bookList[i]) {
+                        sttViewModel.stopListening()
+                        val position = adapter.getItemPosition(bookList[i])
+                        if (position != RecyclerView.NO_POSITION) {
+                            val viewHolder = recyclerView.findViewHolderForAdapterPosition(position)
+                            viewHolder?.itemView?.performClick()
+                        }
+                        break
+                    }
+                }
+            }
+        }
 
     }
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        Log.d(TAG,"123123")
-//        ttsViewModel.doneId.removeObservers(viewLifecycleOwner)
-//    }
+
+    private fun bookListTTS() {
+        ttsViewModel.doneId.observe(viewLifecycleOwner) {
+            if (it == getString(R.string.top_books_main_audio)) {
+                for (i in bookList.indices) {
+                    if (i == bookList.size - 1) {
+                        bookListText += "${i + 1}번은 ${bookList[i]} 입니다.${getString(R.string.top_books_main_menu_audio)}" +
+                                "다시듣기를 원하시면 다시듣기를 말씀해주세요."
+                        break
+                    }
+                    bookListText += "${i + 1}번은 ${bookList[i]}. "
+                }
+                ttsViewModel.oneSpeakOut(bookListText)
+            } else if (it == bookListText) {
+                Log.d("tset", "onViewCreated: $bookListText")
+                sttViewModel.startListening()
+            }
+        }
+    }
+
 
 }

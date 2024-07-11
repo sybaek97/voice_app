@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -18,7 +19,6 @@ object PermissionRequestHandler {
 
     fun initializePermissionLauncher(fragment: Fragment) {
         val viewModel = ViewModelProvider(fragment)[PermissionViewModel::class.java]
-
         permissionLauncher = fragment.registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->

@@ -1,6 +1,7 @@
 package com.baek.voice.viewModel
 
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,7 @@ class PermissionViewModel: ViewModel() {
     val permissionStatus: LiveData<PermissionStatus> get() = _permissionStatus
 
     fun updatePermissionStatus(status: PermissionStatus) {
+        Log.d("PermissionViewModel", "updatePermissionStatus: $status")
         _permissionStatus.value = status
     }
 

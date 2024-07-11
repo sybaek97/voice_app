@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
@@ -42,7 +41,7 @@ class RobotFragment: BaseFragment(){
         ttsViewModel.isTtsInitialized.observe(viewLifecycleOwner){
             if(it==true){
                 if(SharedPreferenceHelper(requireContext(),AUX,false).prefGetter() as Boolean){
-                    ttsViewModel.oneSpeakOut("${selectedItem}${getString(R.string.book_choice_audio)} ${getString(R.string.book_choice_robot_audio)}")
+                    ttsViewModel.oneSpeakOut("${selectedItem}${getString(R.string.selected_book_audio)} ${getString(R.string.book_choice_robot_audio)}")
                     binding.auxBtn.apply{
                         visibility= View.VISIBLE
                         text="버튼을 눌러 이어폰을 제거"
@@ -52,7 +51,7 @@ class RobotFragment: BaseFragment(){
 
 
                 }else{
-                    ttsViewModel.oneSpeakOut("${selectedItem}${getString(R.string.book_choice_audio)}")
+                    ttsViewModel.oneSpeakOut("${selectedItem}${getString(R.string.selected_book_audio)}")
                 }
             }
         }
@@ -66,7 +65,7 @@ class RobotFragment: BaseFragment(){
 
         //만약 aux선이 연결되어있지 않을 경우 바로 로봇 출발
         ttsViewModel.doneId.observe(viewLifecycleOwner){voiceId->
-            if(voiceId=="${selectedItem}${getString(R.string.book_choice_audio)}"){
+            if(voiceId=="${selectedItem}${getString(R.string.selected_book_audio)}"){
                 ttsViewModel.oneSpeakOut(getString(R.string.book_choice_robot_aux_check_audio))
             }
         }

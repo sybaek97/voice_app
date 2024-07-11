@@ -2,20 +2,22 @@
     <string name="app_name">voice</string>
     <string name="txt_pressed_back">뒤로 버튼을 한번 더 누르시면 종료됩니다.</string>
     <string name="SHARED_PREFERENCE_SETTING">setting</string>
-
+    <string name="stt_retry_message">다시 말씀해주세요</string>
 <!--    <string name="top_books_loan_txt">1. 추천 도서 대출</string>-->
     <string name="top_books_loan_txt">1.</string>
 <!--    <string name="event_info_txt">2. 행사 안내</string>-->
     <string name="event_info_txt">2.</string>
 <!--    <string name="audio_replay_txt">3. 다시 듣기</string>-->
     <string name="audio_replay_txt">3.</string>
-    <string name="intro_audio">안녕하세요 한국공학대학교 도서관 도우미 입니다.도우미 로봇의 사용을 위하여 AUX선에 휴대하신 이어폰을 꽂아주세요.</string>
+    <string name="intro_audio">안녕하세요 한국공학대학교 도서관 도우미 입니다. </string>
+    <string name="intro_aux_audio">도우미 로봇의 사용을 위하여 AUX선에 휴대하신 이어폰을 꽂아주세요.</string>
     <string name="main_audio">1번은 추천도서 대출, 2번은 행사안내, 3번은 다시듣기입니다. 원하시는 메뉴를 기기에 말씀해주세요.</string>
     <string name="permission_audio">이 앱은 음성 인식을 위해 마이크 접근 권한이 필요합니다. 권한을 허용해주세요.</string>
     <!--  1번 메뉴 오디오  -->
     <string name="top_books_main_audio">추천도서 대출을 선택하셨습니다.</string>
     <string name="top_books_main_menu_audio">원하시는 도서를 기기에 말씀해주세요.</string>
-    <string name="book_choice_audio">도서를 선택하셨습니다.</string>
+    <string name="selected_book_audio">도서를 선택하셨습니다.</string>
+    <string name="selected_event_audio">행사를 선택하셨습니다.</string>
     <string name="book_choice_robot_audio">이어폰을 뽑은 후 도우미 로봇이 출발합니다. 이어폰을 뽑아주세요.</string>
     <string name="book_choice_robot_aux_check_audio">도우미 로봇이 출발합니다.</string>
 

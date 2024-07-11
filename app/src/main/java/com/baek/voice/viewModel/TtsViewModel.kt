@@ -41,7 +41,9 @@ class TtsViewModel(application: Application):AndroidViewModel(application),OnIni
             override fun onError(utteranceId: String?) {}
         })
     }
-
+    fun resetDoneId() {
+        _doneId.value = null
+    }
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             val result = tts.setLanguage(Locale.KOREAN)
