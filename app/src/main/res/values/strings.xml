@@ -28,15 +28,15 @@
 
     <!--  3번 메뉴 오디오  -->
     <string name="replay_audio">다시듣기를 선택하셨습니다.</string>
-<!--    <string name="app_title">한국공학대학교\n도서관 도우미</string>-->
-    <string name="app_title">CrePASS</string>
+    <string name="app_title">한국공학대학교\n도서관 도우미</string>
+<!--    <string name="app_title">CrePASS</string>-->
 
 
     <string-array name="top_book_list">
         <item>test1</item>
         <item>test2</item>
         <item>test3</item>
-        <item>test4</item>
+
     </string-array>
 
     <string-array name="event_info_list">

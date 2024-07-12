@@ -31,18 +31,12 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
 
     private val _recognizedText = MutableLiveData<String>()
     val recognizedText: LiveData<String> get() = _recognizedText
-    private lateinit var startMediaPlayer: MediaPlayer
-    private lateinit var endMediaPlayer: MediaPlayer
-    private lateinit var audioManager: AudioManager
+    private var startMediaPlayer: MediaPlayer = MediaPlayer.create(application, R.raw.button01a)
+    private var endMediaPlayer: MediaPlayer = MediaPlayer.create(application, R.raw.stt_sound)
     private var speechRecognizer: SpeechRecognizer =
         SpeechRecognizer.createSpeechRecognizer(application)
 
     init {
-
-        // SoundPool 초기화
-        audioManager = application.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        startMediaPlayer = MediaPlayer.create(application, R.raw.button01a)
-        endMediaPlayer = MediaPlayer.create(application, R.raw.stt_sound)
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {}
             override fun onBeginningOfSpeech() {}
@@ -97,7 +91,9 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
         speechRecognizer.stopListening()
     }
 
-
+    fun resetRecognizedText() {
+        _recognizedText.value = ""
+    }
 
 
     override fun onCleared() {

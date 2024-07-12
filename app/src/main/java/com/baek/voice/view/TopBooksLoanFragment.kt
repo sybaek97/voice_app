@@ -28,12 +28,13 @@ class TopBooksLoanFragment : BaseFragment() {
     private lateinit var binding: FragmentTopBooksLoanBinding
     private val ttsViewModel: TtsViewModel by viewModels()
     private val sttViewModel: SttViewModel by viewModels()
-    private lateinit var layoutManager: RecyclerView.LayoutManager
     private val bookListViewModel: BookListViewModel by viewModels()
-    private lateinit var adapter: BookAdapter
-    private var backKeyPressedTime: Long = 0
 
-    private lateinit var bookList: Array<String>
+
+    private lateinit var layoutManager: RecyclerView.LayoutManager
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: BookAdapter
+
     private lateinit var bookListText: String
 
 
@@ -46,6 +47,8 @@ class TopBooksLoanFragment : BaseFragment() {
             inflater, R.layout.fragment_top_books_loan, container,
             false
         )
+        bookListTTS()
+
         return binding.root
 
     }
@@ -53,19 +56,111 @@ class TopBooksLoanFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        bookList = resources.getStringArray(R.array.top_book_list)
-        bookListText = ""
-
-
+        // TTS 초기화 여부 관찰자 설정
         ttsViewModel.isTtsInitialized.observe(viewLifecycleOwner) { isInitialized ->
             if (isInitialized == true) {
                 ttsViewModel.oneSpeakOut(getString(R.string.top_books_main_audio))
             }
         }
 
-        val recyclerView = binding.recyclerBookList
+        recyclerView = binding.recyclerBookList
         layoutManager = LinearLayoutManager(requireContext())
         recyclerView.layoutManager = layoutManager
+
+
+        clickItem()
+
+
+
+        sttViewModel.recognizedText.observe(viewLifecycleOwner) { sttId ->
+            binding.titleText.text = sttId
+            lifecycleScope.launch {
+                delay(1000)
+                when (sttId) {
+                    "다시 듣기" -> recycler()
+                    "뒤로 가기" -> {
+                        findNavController().popBackStack()
+                        sttViewModel.resetRecognizedText()
+
+                    }
+
+                    else -> handleSttCommand(sttId)
+                }
+            }
+
+        }
+
+    }
+
+    private fun bookListTTS() {
+        ttsViewModel.doneId.removeObservers(viewLifecycleOwner)
+
+        ttsViewModel.doneId.observe(viewLifecycleOwner) {
+
+            if (it == getString(R.string.top_books_main_audio)) {
+                recycler()
+            } else if (it == bookListText) {
+                sttViewModel.startListening()
+            }
+        }
+    }
+
+
+    /** 책 목록 TTS로 읽기*/
+    private fun recycler() {
+        bookListViewModel.data.value?.let { bookList ->
+            bookListText = ""
+            for (i in bookList.indices) {
+                if (i == bookList.size - 1) {
+                    bookListText += "${i + 1}번은 ${bookList[i]} 입니다.${getString(R.string.top_books_main_menu_audio)}" +
+                            "다시듣기를 원하시면 다시듣기를 말씀해주세요."
+                    break
+                }
+                bookListText += "${i + 1}번은 ${bookList[i]}. "
+            }
+            ttsViewModel.oneSpeakOut(bookListText)
+        }
+
+    }
+
+    private fun handleSttCommand(sttId: String) {
+
+        bookListViewModel.data.value?.let { bookList ->
+            for (i in bookList.indices) {
+                if (sttId == "${i + 1}번" ||
+                    sttId == "${i + 1}본" ||
+                    sttId == bookList[i] ||
+                    sttId == "${i + 1}번 ${bookList[i]}" || sttId == "${i + 1}본 ${bookList[i]}") {
+                    sttViewModel.stopListening()
+                    val position = adapter.getItemPosition(bookList[i])
+                    if (position != RecyclerView.NO_POSITION) {
+                        ttsViewModel.stop()
+                        // Item 클릭 이벤트 트리거
+                        sttViewModel.resetRecognizedText()
+                        val viewHolder =
+                            recyclerView.findViewHolderForAdapterPosition(position)
+                        viewHolder?.itemView?.performClick()
+
+                        val action =
+                            TopBooksLoanFragmentDirections.actionTopBooksLoanFramgnetToRobotFragment(
+                                bookList[i]
+                            )
+                        findNavController().navigate(action)
+
+                    }
+                    break
+                } else if (sttId.isNotEmpty()) {
+                    ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
+                    lifecycleScope.launch {
+                        delay(1000)
+                        sttViewModel.startListening()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun clickItem() {
 
         bookListViewModel.data.observe(viewLifecycleOwner) { data ->
             adapter = BookAdapter(data, object : BookAdapter.OnItemClickListener {
@@ -80,48 +175,6 @@ class TopBooksLoanFragment : BaseFragment() {
             })
             recyclerView.adapter = adapter
         }
-
-        bookListTTS()
-
-        sttViewModel.recognizedText.observe(viewLifecycleOwner) { sttId ->
-            if(sttId=="다시 듣기"){
-                bookListTTS()
-
-            }else{
-                for (i in bookList.indices) {
-                    if (sttId == "${i + 1}번"||sttId== bookList[i]) {
-                        sttViewModel.stopListening()
-                        val position = adapter.getItemPosition(bookList[i])
-                        if (position != RecyclerView.NO_POSITION) {
-                            val viewHolder = recyclerView.findViewHolderForAdapterPosition(position)
-                            viewHolder?.itemView?.performClick()
-                        }
-                        break
-                    }
-                }
-            }
-        }
-
     }
-
-    private fun bookListTTS() {
-        ttsViewModel.doneId.observe(viewLifecycleOwner) {
-            if (it == getString(R.string.top_books_main_audio)) {
-                for (i in bookList.indices) {
-                    if (i == bookList.size - 1) {
-                        bookListText += "${i + 1}번은 ${bookList[i]} 입니다.${getString(R.string.top_books_main_menu_audio)}" +
-                                "다시듣기를 원하시면 다시듣기를 말씀해주세요."
-                        break
-                    }
-                    bookListText += "${i + 1}번은 ${bookList[i]}. "
-                }
-                ttsViewModel.oneSpeakOut(bookListText)
-            } else if (it == bookListText) {
-                Log.d("tset", "onViewCreated: $bookListText")
-                sttViewModel.startListening()
-            }
-        }
-    }
-
 
 }

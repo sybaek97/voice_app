@@ -29,7 +29,7 @@ class EventAdapter(private val mData: List<String>,  private val itemClickListen
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view= LayoutInflater.from(parent.context).inflate(R.layout.book_item_view,parent,false)
+        val view= LayoutInflater.from(parent.context).inflate(R.layout.event_item_view,parent,false)
         return ViewHolder(view)
     }
 
@@ -38,7 +38,9 @@ class EventAdapter(private val mData: List<String>,  private val itemClickListen
         holder.textView.text = item
     }
 
-
+    fun getItemPosition(item: String): Int {
+        return mData.indexOf(item)
+    }
     override fun getItemCount(): Int {
 
         return mData.size

@@ -17,6 +17,7 @@ import android.view.animation.AnimationUtils
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.baek.voice.R
 import com.baek.voice.application.BaseFragment
@@ -26,6 +27,8 @@ import com.baek.voice.databinding.FragmentHomeBinding
 import com.baek.voice.viewModel.PermissionViewModel
 import com.baek.voice.viewModel.SttViewModel
 import com.baek.voice.viewModel.TtsViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class HomeFragment : BaseFragment() {
     override var isBackAvailable: Boolean = false
@@ -91,16 +94,34 @@ class HomeFragment : BaseFragment() {
             sttViewModel.stopListening()
         }
         sttViewModel.recognizedText.observe(viewLifecycleOwner){sttId->
+
+            binding.textView.text=sttId
+
             when(sttId){
-                "1번","추천 도서 대출"->{
-                    binding.topBooksLoanBtn.performClick()}
-                "2번","행사 안내"->{
-                    binding.eventInfoBtn.performClick()}
-                "3번","다시 듣기"->{
-                    binding.audioReplayBtn.performClick()}
+                "1번","일본","1본","추천 도서 대출","1번 추천 도서 대출","추천도서 대출","추천도서대출"->{
+                    binding.topBooksLoanBtn.performClick()
+                    sttViewModel.resetRecognizedText()
+
+                }
+                "2번","이본","2본","행사안내","2번 행사안내","행사 안내","2번 행사 안내"->{
+                    binding.eventInfoBtn.performClick()
+                    sttViewModel.resetRecognizedText()
+                }
+
+                "3번","삼본","3본","다시듣기","3번 다시듣기","다시 듣기","3번 다시 듣기"->{
+                    binding.audioReplayBtn.performClick()
+                    sttViewModel.resetRecognizedText()
+
+                }
+                ""->{
+
+                }
                 else -> {
                     ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
-                    sttViewModel.startListening()
+                    lifecycleScope.launch {
+                        delay(1000)
+                        sttViewModel.startListening()
+                    }
                 }
             }
         }
@@ -146,9 +167,12 @@ class HomeFragment : BaseFragment() {
 
                 }
             }else if(speakId==getString(R.string.main_audio)){ //메뉴 설명이 끝난 뒤 STT실행
+                lifecycleScope.launch {
+                    delay(1000)
+                    sttViewModel.startListening()
+                    ttsViewModel.resetDoneId()
+                }
 
-                sttViewModel.startListening()
-                ttsViewModel.resetDoneId()
             }
         }
     }
