@@ -39,7 +39,7 @@ class HomeFragment : BaseFragment() {
     private val permissionViewModel: PermissionViewModel by viewModels()
     private var talkBack: Boolean = false
     private val AUX:String = "aux"
-    private var auxStatus:Boolean=false
+    private var auxBtnState:Boolean=false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,7 +60,6 @@ class HomeFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        auxStatus= SharedPreferenceHelper(requireContext(),AUX,false).prefGetter() as Boolean
         val fadeInUpAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.fade_in_up)
         binding.titleText.startAnimation(fadeInUpAnimation)
         binding.lifecycleOwner = this
@@ -69,14 +68,14 @@ class HomeFragment : BaseFragment() {
         PermissionRequestHandler.initializePermissionLauncher(this)
         PermissionRequestHandler.requestAudioPermission(this)
 
-//        permissionCheck()
-        updateButtonState()
 
 
-
+        auxBtnState=SharedPreferenceHelper(requireContext(),AUX,false).prefGetter() as Boolean
+        updateUI(auxBtnState)
 
         binding.auxBtn.setOnClickListener{
-            updateButtonToggle()
+            auxBtnState = !auxBtnState
+            updateUI(auxBtnState)
         }
         binding.eventInfoBtn.setOnClickListener {
             sttViewModel.stopListening()
@@ -159,7 +158,7 @@ class HomeFragment : BaseFragment() {
     private fun auxCheck(){
         ttsViewModel.doneId.observe(viewLifecycleOwner){speakId->
             if(speakId==getString(R.string.intro_audio)){
-                if(!auxStatus){
+                if(!auxBtnState){
                     ttsViewModel.oneSpeakOut(getString(R.string.intro_aux_audio))
                 }else{
                     //이어폰이 연결되어 있다면 바로 메뉴 설명
@@ -186,26 +185,18 @@ class HomeFragment : BaseFragment() {
     }
 
 
-    private fun updateButtonToggle() {
-        if(auxStatus){
-            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.sub))
-            binding.auxBtn.text="OFF"
-            SharedPreferenceHelper(requireContext(),AUX,false).prefSetter()
-        }else{
-            ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
-            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
-            binding.auxBtn.text="ON"
-            SharedPreferenceHelper(requireContext(),AUX,true).prefSetter()
 
+    private fun updateUI(isOn: Boolean) {
+        if (isOn) {
+            ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
+            binding.auxBtn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
+            SharedPreferenceHelper(requireContext(), AUX, true).prefSetter()
+            binding.auxBtn.text = "이어폰 연결 상태: ON"
+        } else {
+            binding.auxBtn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.sub))
+            SharedPreferenceHelper(requireContext(), AUX, false).prefSetter()
+            binding.auxBtn.text = "이어폰 연결 상태: OFF"
         }
     }
-    private fun updateButtonState() {
-        if(auxStatus){
-            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
-            binding.auxBtn.text="ON"
-        }else{
-            binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.sub))
-            binding.auxBtn.text="OFF"
-        }
-    }
+
 }
