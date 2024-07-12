@@ -50,7 +50,7 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() {
-                _recognizedText.value="empty"
+//                _recognizedText.value="empty"
                 endMediaPlayer.start()
                 isListening = false
             }

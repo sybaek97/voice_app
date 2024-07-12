@@ -19,7 +19,7 @@
     <string name="book_choice_robot_aux_check_audio">도우미 로봇이 출발합니다.</string>
 
     <!--  2번 메뉴 오디오  -->
-    <string name="event_info_main_audio">행사안내을 선택하셨습니다.</string>
+    <string name="event_info_main_audio">행사안내를 선택하셨습니다.</string>
     <string name="event_info_main_menu_audio">원하시는 행사 또는 행사 번호를 기기에 말씀해주세요.</string>
     <string name="event_info_complete_audio">행사안내를 종료합니다.</string>
 

@@ -16,6 +16,7 @@ import com.baek.voice.R
 import com.baek.voice.adapter.BookAdapter
 import com.baek.voice.adapter.EventAdapter
 import com.baek.voice.application.BaseFragment
+import com.baek.voice.common.findIndexed
 import com.baek.voice.databinding.FragmentEventInfoBinding
 import com.baek.voice.viewModel.EventListViewModel
 import com.baek.voice.viewModel.SttViewModel
@@ -73,7 +74,7 @@ class EventInfoFragment : BaseFragment() {
 
 
         sttViewModel.recognizedText.observe(viewLifecycleOwner) { sttId ->
-
+            Log.d("TAG","추천도서 대출 여기서 실행?$sttId")
             if (sttViewModel.isResetting && sttId.isEmpty()) {
                 sttViewModel.completeResetting()
                 return@observe // 무시하고 빠져나가기
@@ -107,6 +108,7 @@ class EventInfoFragment : BaseFragment() {
 
             } else if (it == eventListText) {
                 sttViewModel.startListening()
+                ttsViewModel.resetDoneId()
             }
 
         }
@@ -143,39 +145,68 @@ class EventInfoFragment : BaseFragment() {
         }
     }
     private fun handleSttCommand(sttId: String) {
-
         eventViewModel.data.value?.let { eventList ->
-            for (i in eventList.indices) {
-                if (sttId == "${i + 1}번" ||
-                    sttId == "${i + 1}본" ||
-                    sttId == eventList[i] ||
-                    sttId == "${i + 1}번 ${eventList[i]}" || sttId == "${i + 1}본 ${eventList[i]}") {
-                    sttViewModel.stopListening()
-                    val position = adapter.getItemPosition(eventList[i])
-                    if (position != RecyclerView.NO_POSITION) {
-                        ttsViewModel.stop()
-                        // Item 클릭 이벤트 트리거
-                        sttViewModel.resetRecognizedText()
-                        val viewHolder =
-                            recyclerView.findViewHolderForAdapterPosition(position)
-                        viewHolder?.itemView?.performClick()
-                        val action =
-                            TopBooksLoanFragmentDirections.actionTopBooksLoanFramgnetToRobotFragment(
-                                eventList[i]
-                            )
-                        findNavController().navigate(action)
+            val matchedEvent = eventList.findIndexed { index, event ->
+                sttId == "${index + 1}번" ||
+                        sttId == "${index + 1}본" ||
+                        sttId == event ||
+                        sttId == "${index + 1}번 $event" || sttId == "${index + 1}본 $event"
+            }
 
-                    }
-                    break
-                } else if (sttId.isNotEmpty()) {
-                    ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
-                    lifecycleScope.launch {
-                        delay(3000)
-                        sttViewModel.startListening()
-                    }
+            if (matchedEvent != null) {
+                sttViewModel.stopListening()
+                val position = adapter.getItemPosition(matchedEvent)
+                if (position != RecyclerView.NO_POSITION) {
+                    ttsViewModel.stop()
+                    // Item 클릭 이벤트 트리거
+                    val viewHolder = recyclerView.findViewHolderForAdapterPosition(position)
+                    viewHolder?.itemView?.performClick()
+                    val action = EventInfoFragmentDirections.actionEventInfoFragmentToEventScreenFragment(matchedEvent)
+                    findNavController().navigate(action)
+                }
+                sttViewModel.resetRecognizedText()
+            } else if (sttId.isNotEmpty()) {
+                ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
+                lifecycleScope.launch {
+                    delay(3000)
+                    sttViewModel.startListening()
                 }
             }
         }
+//        eventViewModel.data.value?.let { eventList ->
+//            for (i in eventList.indices) {
+//                Log.d("TAG","추천도서 대출 여기서 실행?zzzzz$sttId")
+//                if (sttId == "${i + 1}번" ||
+//                    sttId == "${i + 1}본" ||
+//                    sttId == eventList[i] ||
+//                    sttId == "${i + 1}번 ${eventList[i]}" || sttId == "${i + 1}본 ${eventList[i]}") {
+//                    sttViewModel.stopListening()
+//                    val position = adapter.getItemPosition(eventList[i])
+//                    if (position != RecyclerView.NO_POSITION) {
+//                        ttsViewModel.stop()
+//                        // Item 클릭 이벤트 트리거
+//                        val viewHolder =
+//                            recyclerView.findViewHolderForAdapterPosition(position)
+//                        viewHolder?.itemView?.performClick()
+//                        val action =
+//                            EventInfoFragmentDirections.actionEventInfoFragmentToEventScreenFragment(
+//                                eventList[i]
+//                            )
+//                        findNavController().navigate(action)
+//
+//                    }
+//                    sttViewModel.resetRecognizedText()
+//                    break
+//                } else if (sttId.isNotEmpty()) {
+//
+//                    ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
+//                    lifecycleScope.launch {
+//                        delay(3000)
+//                        sttViewModel.startListening()
+//                    }
+//                }
+//            }
+//        }
     }
 
 }

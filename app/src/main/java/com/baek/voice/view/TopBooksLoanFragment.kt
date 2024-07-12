@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.baek.voice.R
 import com.baek.voice.adapter.BookAdapter
 import com.baek.voice.application.BaseFragment
+import com.baek.voice.common.findIndexed
 import com.baek.voice.databinding.FragmentTopBooksLoanBinding
 import com.baek.voice.viewModel.BookListViewModel
 import com.baek.voice.viewModel.SttViewModel
@@ -56,6 +57,7 @@ class TopBooksLoanFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.lifecycleOwner = this
 
         // TTS 초기화 여부 관찰자 설정
         ttsViewModel.isTtsInitialized.observe(viewLifecycleOwner) { isInitialized ->
@@ -74,6 +76,7 @@ class TopBooksLoanFragment : BaseFragment() {
 
 
         sttViewModel.recognizedText.observe(viewLifecycleOwner) { sttId ->
+            Log.d(TAG, sttId)
             if (sttViewModel.isResetting && sttId.isEmpty()) {
                 sttViewModel.completeResetting()
                 return@observe // 무시하고 빠져나가기
@@ -101,11 +104,12 @@ class TopBooksLoanFragment : BaseFragment() {
         ttsViewModel.doneId.removeObservers(viewLifecycleOwner)
 
         ttsViewModel.doneId.observe(viewLifecycleOwner) {
-
+        Log.d("TAG","추천도서 대출 여기서 실행?$it")
             if (it == getString(R.string.top_books_main_audio)) {
                 recycler()
             } else if (it == bookListText) {
                 sttViewModel.startListening()
+                ttsViewModel.resetDoneId()
             }
         }
     }
@@ -129,39 +133,36 @@ class TopBooksLoanFragment : BaseFragment() {
     }
 
     private fun handleSttCommand(sttId: String) {
-        bookListViewModel.data.value?.let { bookList ->
-            for (i in bookList.indices) {
-                if (sttId == "${i + 1}번" ||
-                    sttId == "${i + 1}본" ||
-                    sttId == bookList[i] ||
-                    sttId == "${i + 1}번 ${bookList[i]}" || sttId == "${i + 1}본 ${bookList[i]}") {
-                    sttViewModel.stopListening()
-                    val position = adapter.getItemPosition(bookList[i])
-                    if (position != RecyclerView.NO_POSITION) {
-                        ttsViewModel.stop()
-                        // Item 클릭 이벤트 트리거
-                        sttViewModel.resetRecognizedText()
-                        val viewHolder =
-                            recyclerView.findViewHolderForAdapterPosition(position)
-                        viewHolder?.itemView?.performClick()
+        bookListViewModel.data.value?.let { eventList ->
+            val matchedEvent = eventList.findIndexed { index, event ->
+                sttId == "${index + 1}번" ||
+                        sttId == "${index + 1}본" ||
+                        sttId == event ||
+                        sttId == "${index + 1}번 $event" || sttId == "${index + 1}본 $event"
+            }
 
-                        val action =
-                            TopBooksLoanFragmentDirections.actionTopBooksLoanFramgnetToRobotFragment(
-                                bookList[i]
-                            )
-                        findNavController().navigate(action)
-
-                    }
-                    break
-                } else if (sttId.isNotEmpty()) {
-                    ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
-                    lifecycleScope.launch {
-                        delay(3000)
-                        sttViewModel.startListening()
-                    }
+            if (matchedEvent != null) {
+                sttViewModel.stopListening()
+                val position = adapter.getItemPosition(matchedEvent)
+                if (position != RecyclerView.NO_POSITION) {
+                    ttsViewModel.stop()
+                    // Item 클릭 이벤트 트리거
+                    val viewHolder = recyclerView.findViewHolderForAdapterPosition(position)
+                    viewHolder?.itemView?.performClick()
+                    val action =TopBooksLoanFragmentDirections.actionTopBooksLoanFramgnetToRobotFragment(
+                        matchedEvent)
+                    findNavController().navigate(action)
+                }
+                sttViewModel.resetRecognizedText()
+            } else if (sttId.isNotEmpty()) {
+                ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
+                lifecycleScope.launch {
+                    delay(3000)
+                    sttViewModel.startListening()
                 }
             }
         }
+        
     }
 
     private fun clickItem() {

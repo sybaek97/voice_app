@@ -93,23 +93,23 @@ class HomeFragment : BaseFragment() {
             sttViewModel.stopListening()
         }
         sttViewModel.recognizedText.observe(viewLifecycleOwner){sttId->
-            Log.d(TAG, sttViewModel.isResetting.toString())
+            Log.d("TAG","추천도서 대출 여기서 실행?$sttId")
             if (sttViewModel.isResetting && sttId.isEmpty()) {
                 sttViewModel.completeResetting()
                 return@observe // 무시하고 빠져나가기
             }
 
             when(sttId){
-                "1번","일본","1본","추천 도서 대출","1번 추천 도서 대출","추천도서 대출","추천도서대출"->{
+                "1번","일본","1본","추천 도서 대출","일본 추천 도서 대출","일번 추천 도서 대출","1번 추천 도서 대출","추천도서 대출","추천도서대출"->{
                     binding.topBooksLoanBtn.performClick()
                     sttViewModel.resetRecognizedText()
                 }
-                "2번","이본","2본","행사안내","2번 행사안내","행사 안내","2번 행사 안내"->{
+                "2번","이본","2본","행사안내","이번 행사 안내","2번 행사안내","행사 안내","2번 행사 안내"->{
                     binding.eventInfoBtn.performClick()
                     sttViewModel.resetRecognizedText()
                 }
 
-                "3번","삼본","3본","다시듣기","3번 다시듣기","다시 듣기","3번 다시 듣기"->{
+                "3번","삼본","3본","다시듣기","3번 다시듣기","삼번 다시 듣기","다시 듣기","3번 다시 듣기"->{
                     binding.audioReplayBtn.performClick()
                     sttViewModel.resetRecognizedText()
                 }
@@ -157,6 +157,7 @@ class HomeFragment : BaseFragment() {
     }
     private fun auxCheck(){
         ttsViewModel.doneId.observe(viewLifecycleOwner){speakId->
+            Log.d("TAG","홈그라운드 여기서 실행?$speakId")
             if(speakId==getString(R.string.intro_audio)){
                 if(!auxBtnState){
                     ttsViewModel.oneSpeakOut(getString(R.string.intro_aux_audio))
