@@ -51,6 +51,7 @@ class HomeFragment : BaseFragment() {
             R.layout.fragment_home, container,
             false
         )
+        sttViewModel.resetRecognizedText()
         talkBack = isTalkBackEnabled(requireContext())
         permissionCheck()
         return binding.root
@@ -75,7 +76,6 @@ class HomeFragment : BaseFragment() {
 
 
         binding.auxBtn.setOnClickListener{
-            ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
             updateButtonToggle()
         }
         binding.eventInfoBtn.setOnClickListener {
@@ -94,14 +94,16 @@ class HomeFragment : BaseFragment() {
             sttViewModel.stopListening()
         }
         sttViewModel.recognizedText.observe(viewLifecycleOwner){sttId->
-
-            binding.textView.text=sttId
+            Log.d(TAG, sttViewModel.isResetting.toString())
+            if (sttViewModel.isResetting && sttId.isEmpty()) {
+                sttViewModel.completeResetting()
+                return@observe // 무시하고 빠져나가기
+            }
 
             when(sttId){
                 "1번","일본","1본","추천 도서 대출","1번 추천 도서 대출","추천도서 대출","추천도서대출"->{
                     binding.topBooksLoanBtn.performClick()
                     sttViewModel.resetRecognizedText()
-
                 }
                 "2번","이본","2본","행사안내","2번 행사안내","행사 안내","2번 행사 안내"->{
                     binding.eventInfoBtn.performClick()
@@ -111,15 +113,13 @@ class HomeFragment : BaseFragment() {
                 "3번","삼본","3본","다시듣기","3번 다시듣기","다시 듣기","3번 다시 듣기"->{
                     binding.audioReplayBtn.performClick()
                     sttViewModel.resetRecognizedText()
-
                 }
                 ""->{
-
                 }
                 else -> {
                     ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
                     lifecycleScope.launch {
-                        delay(1000)
+                        delay(3000)
                         sttViewModel.startListening()
                     }
                 }
@@ -192,6 +192,7 @@ class HomeFragment : BaseFragment() {
             binding.auxBtn.text="OFF"
             SharedPreferenceHelper(requireContext(),AUX,false).prefSetter()
         }else{
+            ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
             binding.auxBtn.backgroundTintList= ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_brown))
             binding.auxBtn.text="ON"
             SharedPreferenceHelper(requireContext(),AUX,true).prefSetter()

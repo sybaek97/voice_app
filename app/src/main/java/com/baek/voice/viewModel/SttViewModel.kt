@@ -19,6 +19,7 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.accessibility.AccessibilityManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
@@ -35,32 +36,64 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
     private var endMediaPlayer: MediaPlayer = MediaPlayer.create(application, R.raw.stt_sound)
     private var speechRecognizer: SpeechRecognizer =
         SpeechRecognizer.createSpeechRecognizer(application)
+    private var isListening = false
+    private var errorHandler = Handler(Looper.getMainLooper())
+    var isResetting  = false
 
     init {
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {}
+            override fun onReadyForSpeech(params: Bundle?) {
+                startMediaPlayer.start()
+                isListening = true
+            }
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() {
+                _recognizedText.value="empty"
                 endMediaPlayer.start()
-
+                isListening = false
             }
             override fun onError(error: Int) {
-                when(error){
-                    5,7->stopListening()
+                val message = when (error) {
+
+                    SpeechRecognizer.ERROR_AUDIO -> "오디오 에러"
+                    SpeechRecognizer.ERROR_CLIENT -> "클라이언트 에러"
+                    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "퍼미션 없음"
+                    SpeechRecognizer.ERROR_NETWORK -> "네트워크 에러"
+                    SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "네트웍 타임아웃"
+                    SpeechRecognizer.ERROR_NO_MATCH -> "찾을 수 없음"
+                    SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "RECOGNIZER 가 바쁨"
+                    SpeechRecognizer.ERROR_SERVER -> "서버가 이상함"
+                    SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "말하는 시간초과"
+                    else -> "알 수 없는 오류임"
+                }
+                if (isListening) { // 플래그를 사용하여 중복 호출 방지
+                    isListening = false
+                    stopListening()
+                    Toast.makeText(
+                        application.applicationContext,
+                        "에러 발생: $message",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    errorHandler.postDelayed({
+                        isListening = false
+                    }, 2000)
                 }
             }
 
             override fun onResults(results: Bundle?) {
-                Log.e("SpeechRecognizer", "Error:")
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                if (!matches.isNullOrEmpty()) {
-                    _recognizedText.value = matches[0]
-                }else{
-                    Log.e("SpeechRecognizer", "Error:")
-
+                if (isResetting) {
+                    return
                 }
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (!matches.isNullOrEmpty() && matches[0].isNotBlank()) {
+                    _recognizedText.value = matches[0]
+                } else {
+                    Toast.makeText(application.applicationContext, "음성을 인식하지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                }
+                isListening = false // 결과 수신 후 플래그 해제
 
             }
 
@@ -75,8 +108,6 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
 
 //        soundPool.play(soundId, 1f, 1f, 0, 0, 1f)
 
-
-        startMediaPlayer.start()
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(
                 RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -88,11 +119,19 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
     }
 
     fun stopListening() {
-        speechRecognizer.stopListening()
+        if (isListening) {
+            speechRecognizer.stopListening()
+            isListening = false // 플래그 해제
+        }
     }
 
     fun resetRecognizedText() {
+        isResetting = true
         _recognizedText.value = ""
+    }
+
+    fun completeResetting() {
+        isResetting = false
     }
 
 

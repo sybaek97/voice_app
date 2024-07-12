@@ -46,6 +46,7 @@ class EventInfoFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         eventListTTS()
+        sttViewModel.resetRecognizedText()
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_info, container, false)
         return binding.root
 
@@ -72,7 +73,11 @@ class EventInfoFragment : BaseFragment() {
 
 
         sttViewModel.recognizedText.observe(viewLifecycleOwner) { sttId ->
-            binding.titleText.text = sttId
+
+            if (sttViewModel.isResetting && sttId.isEmpty()) {
+                sttViewModel.completeResetting()
+                return@observe // 무시하고 빠져나가기
+            }
             lifecycleScope.launch {
                 delay(1000)
                 when (sttId) {
@@ -165,7 +170,7 @@ class EventInfoFragment : BaseFragment() {
                 } else if (sttId.isNotEmpty()) {
                     ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
                     lifecycleScope.launch {
-                        delay(1000)
+                        delay(3000)
                         sttViewModel.startListening()
                     }
                 }
