@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -48,7 +47,7 @@ class TopBooksLoanFragment : BaseFragment() {
             inflater, R.layout.fragment_top_books_loan, container,
             false
         )
-        bookListTTS()
+        monitorTextToSpeech()
         sttViewModel.resetRecognizedText()
 
         return binding.root
@@ -69,54 +68,56 @@ class TopBooksLoanFragment : BaseFragment() {
         recyclerView = binding.recyclerBookList
         layoutManager = LinearLayoutManager(requireContext())
         recyclerView.layoutManager = layoutManager
-
-
         clickItem()
+        monitorSpeechToText()
+
+    }
 
 
 
+
+    /** 기기 음성 인식 결과*/
+
+    private fun monitorTextToSpeech() {
+        ttsViewModel.doneId.removeObservers(viewLifecycleOwner)
+
+        ttsViewModel.doneId.observe(viewLifecycleOwner) {
+            Log.d("TAG", "추천도서 대출 여기서 실행?$it")
+            if (it == getString(R.string.top_books_main_audio)) {
+                readEventList()
+            } else if (it == bookListText) {
+                sttViewModel.startListening()
+                ttsViewModel.resetDoneId()
+            }else if(it==getString(R.string.stt_retry_message)){
+                ttsViewModel.oneSpeakOut(bookListText)
+            }
+        }
+    }
+
+    /** 사용자 음성 인식 결과*/
+    private fun monitorSpeechToText(){
         sttViewModel.recognizedText.observe(viewLifecycleOwner) { sttId ->
-            Log.d(TAG, sttId)
             if (sttViewModel.isResetting && sttId.isEmpty()) {
                 sttViewModel.completeResetting()
                 return@observe // 무시하고 빠져나가기
             }
-
             lifecycleScope.launch {
                 delay(1000)
                 when (sttId) {
-                    "다시 듣기" -> recycler()
+                    "다시 듣기" -> readEventList()
                     "뒤로 가기" -> {
                         findNavController().popBackStack()
                         sttViewModel.resetRecognizedText()
-
                     }
-
                     else -> handleSttCommand(sttId)
                 }
             }
 
         }
-
     }
-
-    private fun bookListTTS() {
-        ttsViewModel.doneId.removeObservers(viewLifecycleOwner)
-
-        ttsViewModel.doneId.observe(viewLifecycleOwner) {
-        Log.d("TAG","추천도서 대출 여기서 실행?$it")
-            if (it == getString(R.string.top_books_main_audio)) {
-                recycler()
-            } else if (it == bookListText) {
-                sttViewModel.startListening()
-                ttsViewModel.resetDoneId()
-            }
-        }
-    }
-
 
     /** 책 목록 TTS로 읽기*/
-    private fun recycler() {
+    private fun readEventList() {
         bookListViewModel.data.value?.let { bookList ->
             bookListText = ""
             for (i in bookList.indices) {
@@ -149,20 +150,21 @@ class TopBooksLoanFragment : BaseFragment() {
                     // Item 클릭 이벤트 트리거
                     val viewHolder = recyclerView.findViewHolderForAdapterPosition(position)
                     viewHolder?.itemView?.performClick()
-                    val action =TopBooksLoanFragmentDirections.actionTopBooksLoanFramgnetToRobotFragment(
-                        matchedEvent)
+                    val action =
+                        TopBooksLoanFragmentDirections.actionTopBooksLoanFramgnetToRobotFragment(
+                            matchedEvent
+                        )
                     findNavController().navigate(action)
                 }
                 sttViewModel.resetRecognizedText()
-            } else if (sttId.isNotEmpty()) {
-                ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
+            }else{
                 lifecycleScope.launch {
-                    delay(3000)
-                    sttViewModel.startListening()
+                    delay(2000)
+                    ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
                 }
             }
         }
-        
+
     }
 
     private fun clickItem() {

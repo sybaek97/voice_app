@@ -49,13 +49,10 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() {
-//                _recognizedText.value="empty"
-                endMediaPlayer.start()
-                isListening = false
-            }
+            override fun onEndOfSpeech() {}
             override fun onError(error: Int) {
-                val message = when (error) {
+
+                val message:String = when (error) {
 
                     SpeechRecognizer.ERROR_AUDIO -> "오디오 에러"
                     SpeechRecognizer.ERROR_CLIENT -> "클라이언트 에러"
@@ -67,6 +64,12 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
                     SpeechRecognizer.ERROR_SERVER -> "서버가 이상함"
                     SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "말하는 시간초과"
                     else -> "알 수 없는 오류임"
+                }
+                if(error==SpeechRecognizer.ERROR_NO_MATCH){
+                    _recognizedText.value="retry voice"
+                    endMediaPlayer.start()
+                    isListening = false
+                    return
                 }
                 if (isListening) { // 플래그를 사용하여 중복 호출 방지
                     isListening = false
@@ -84,6 +87,9 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
             }
 
             override fun onResults(results: Bundle?) {
+                Log.d("TAG", "onEndOfSpeech: ${recognizedText.value}")
+                endMediaPlayer.start()
+
                 if (isResetting) {
                     return
                 }
@@ -91,7 +97,7 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
                 if (!matches.isNullOrEmpty() && matches[0].isNotBlank()) {
                     _recognizedText.value = matches[0]
                 } else {
-                    Toast.makeText(application.applicationContext, "음성을 인식하지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    _recognizedText.value="retry voice"
                 }
                 isListening = false // 결과 수신 후 플래그 해제
 
@@ -105,9 +111,6 @@ class SttViewModel(application: Application) : AndroidViewModel(application){
 
 
     fun startListening() {
-
-//        soundPool.play(soundId, 1f, 1f, 0, 0, 1f)
-
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(
                 RecognizerIntent.EXTRA_LANGUAGE_MODEL,

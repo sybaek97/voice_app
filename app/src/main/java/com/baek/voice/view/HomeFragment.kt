@@ -73,6 +73,8 @@ class HomeFragment : BaseFragment() {
         auxBtnState=SharedPreferenceHelper(requireContext(),AUX,false).prefGetter() as Boolean
         updateUI(auxBtnState)
 
+        monitorSpeechToText()
+
         binding.auxBtn.setOnClickListener{
             auxBtnState = !auxBtnState
             updateUI(auxBtnState)
@@ -92,11 +94,18 @@ class HomeFragment : BaseFragment() {
             ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
             sttViewModel.stopListening()
         }
+
+
+    }
+
+
+
+    /** 사용자 음성 인식 결과*/
+    private fun monitorSpeechToText(){
         sttViewModel.recognizedText.observe(viewLifecycleOwner){sttId->
-            Log.d("TAG","추천도서 대출 여기서 실행?$sttId")
             if (sttViewModel.isResetting && sttId.isEmpty()) {
                 sttViewModel.completeResetting()
-                return@observe // 무시하고 빠져나가기
+                return@observe
             }
 
             when(sttId){
@@ -113,22 +122,44 @@ class HomeFragment : BaseFragment() {
                     binding.audioReplayBtn.performClick()
                     sttViewModel.resetRecognizedText()
                 }
-                ""->{
-                }
-                else -> {
-                    ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
+                else-> {
                     lifecycleScope.launch {
-                        delay(3000)
-                        sttViewModel.startListening()
+                        delay(2000)
+                        ttsViewModel.oneSpeakOut(getString(R.string.stt_retry_message))
                     }
                 }
             }
+
         }
-
     }
+
+    /** 기기 음성 인식 결과*/
+    private fun monitorTextToSpeech(){
+        ttsViewModel.doneId.observe(viewLifecycleOwner){speakId->
+            if(speakId==getString(R.string.intro_audio)){
+                if(!auxBtnState){
+                    ttsViewModel.oneSpeakOut(getString(R.string.intro_aux_audio))
+                }else{
+                    //이어폰이 연결되어 있다면 바로 메뉴 설명
+                    ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
+
+                }
+            }else if(speakId==getString(R.string.main_audio)){ //메뉴 설명이 끝난 뒤 STT실행
+                lifecycleScope.launch {
+                    delay(1000)
+                    sttViewModel.startListening()
+                    ttsViewModel.resetDoneId()
+                }
+
+            }else if(speakId==getString(R.string.stt_retry_message)){
+                ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
+            }
+        }
+    }
+
+
+    /** 권한 체크*/
     private fun permissionCheck(){
-
-
         permissionViewModel.permissionStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
                 PermissionViewModel.PermissionStatus.GRANTED -> {
@@ -136,7 +167,7 @@ class HomeFragment : BaseFragment() {
                         if (isInitialized == true) {
                             ttsViewModel.oneSpeakOut(getString(R.string.intro_audio))
                             //이어폰 연결이 안되어 있다면 aux 연결 안내 멘트
-                            auxCheck()
+                            monitorTextToSpeech()
                         }
                     }
                 }
@@ -155,27 +186,12 @@ class HomeFragment : BaseFragment() {
             }
         }
     }
-    private fun auxCheck(){
-        ttsViewModel.doneId.observe(viewLifecycleOwner){speakId->
-            Log.d("TAG","홈그라운드 여기서 실행?$speakId")
-            if(speakId==getString(R.string.intro_audio)){
-                if(!auxBtnState){
-                    ttsViewModel.oneSpeakOut(getString(R.string.intro_aux_audio))
-                }else{
-                    //이어폰이 연결되어 있다면 바로 메뉴 설명
-                    ttsViewModel.oneSpeakOut(getString(R.string.main_audio))
 
-                }
-            }else if(speakId==getString(R.string.main_audio)){ //메뉴 설명이 끝난 뒤 STT실행
-                lifecycleScope.launch {
-                    delay(1000)
-                    sttViewModel.startListening()
-                    ttsViewModel.resetDoneId()
-                }
 
-            }
-        }
-    }
+
+
+
+
     private fun isTalkBackEnabled(context: Context): Boolean {
         val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
         val enabledServices = Settings.Secure.getString(

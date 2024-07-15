@@ -27,7 +27,6 @@ class TtsViewModel(application: Application):AndroidViewModel(application),OnIni
         tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {
 
-
             }
 
             override fun onDone(utteranceId: String?) {
@@ -48,7 +47,6 @@ class TtsViewModel(application: Application):AndroidViewModel(application),OnIni
         if (status == TextToSpeech.SUCCESS) {
             val result = tts.setLanguage(Locale.KOREAN)
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                // 언어가 지원되지 않음
             } else {
                 _isTtsInitialized.value = true
             }
@@ -56,17 +54,6 @@ class TtsViewModel(application: Application):AndroidViewModel(application),OnIni
             _isTtsInitialized.value = false
         }
     }
-
-    fun speakOut(text: String) {
-        if (isTtsInitialized.value == true) {
-            if (tts.isSpeaking) {
-                textsQueue.add(text)
-            } else {
-                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "UniqueID")
-            }
-        }
-    }
-
     fun oneSpeakOut(text: String) {
         if (isTtsInitialized.value == true) {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, text)
